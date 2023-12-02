@@ -3,10 +3,10 @@ import numpy as np
 import torch
 from PIL import Image
 
-from diffusers import AutoPipelineForImage2Image
+from diffusers import AutoPipelineForInpainting
 
 # Load model
-pipe = AutoPipelineForImage2Image.from_pretrained("stabilityai/stable-diffusion-xl-refiner-1.0")
+pipe = AutoPipelineForInpainting.from_pretrained("diffusers/stable-diffusion-xl-1.0-inpainting-0.1")
 count = 0
 
 def generate_photo(input_image):
@@ -14,14 +14,15 @@ def generate_photo(input_image):
     count += 1
 
     # Prompts for Stable Diffusion
-    prompt = "Professional LinkedIn photo, person in a suit, realistic skin texture, photorealistic, hyper realism, 85mm portrait photography, hard rim lighting photography, centered"
-    negative_prompt = "deformed, disfigured, poor details, bad anatomy, change person, change age, change race, change hair, change face"
+    prompt = "Professional LinkedIn photo, person in a suit, realistic skin texture, photorealistic, hyper realism, 85mm portrait photography, hard rim lighting photography, centered, plain or blurred background"
+    negative_prompt = "deformed, disfigured, poor details, bad anatomy, different person, different face, different hair, different race"
 
     # Process input image
     input_image = Image.open(input_image).convert("RGB")
+    mask_image = Image.open("mask.png").convert("RGB")
 
     # Generate output image
-    images = pipe(prompt=prompt, negative_prompt=negative_prompt, image=input_image, strength=0.75, guidance_scale=7.5).images
+    images = pipe(prompt=prompt, negative_prompt=negative_prompt, image=input_image, mask_image=mask_image, strength=0.99, num_inference_steps=20, guidance_scale=7.5).images
     images[0].save(f"../results/{count}.png")
 
     return images[0]
