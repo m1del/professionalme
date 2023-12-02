@@ -42,9 +42,6 @@ class FaceDataset(Dataset):
             # Now create the full paths
             image_path = os.path.join(self.image_dir, image_filename)
             mask_path = os.path.join(self.mask_dir, mask_filename)
-            
-            print("image_path: ", image_path)
-            print("mask_path: ", mask_path) 
                        
             image = np.array(Image.open(image_path).convert("RGB")) # Convert to RGB
             mask = np.array(Image.open(mask_path).convert("L"), dtype=np.float32) # Convert to grayscale
