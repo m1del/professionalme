@@ -15,11 +15,11 @@ def generate_photo(input_image):
 
     # Prompts for Stable Diffusion
     prompt = "Professional LinkedIn photo, person in a suit, realistic skin texture, photorealistic, hyper realism, 85mm portrait photography, hard rim lighting photography, centered, plain or blurred background"
-    negative_prompt = "deformed, disfigured, poor details, bad anatomy, different person, different face, different hair, different race"
+    negative_prompt = "deformed, disfigured, poor details, bad anatomy"
 
     # Process input image
     input_image = Image.open(input_image).convert("RGB")
-    mask_image = Image.open("mask.png").convert("RGB")
+    mask_image = Image.open("../src/data/train_masks/33_mask.PNG").convert("RGB") # temp mask loading
 
     # Generate output image
     images = pipe(prompt=prompt, negative_prompt=negative_prompt, image=input_image, mask_image=mask_image, strength=0.99, num_inference_steps=20, guidance_scale=7.5).images
