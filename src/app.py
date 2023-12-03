@@ -52,10 +52,15 @@ def segment_image(model, image_tensor):
 
 
 # Convert mask to image and save
-def save_mask(mask, save_path):
+def save_mask(mask, save_path, image_path):
     mask = mask > 0.5  # Apply threshold
     mask_image = Image.fromarray((mask * 255).astype(np.uint8))
-    mask_image.save(save_path)
+
+    image = Image.open(image_path).convert("RGB")
+    target_width, target_height = image.size
+    resized_mask = mask_image.resize((target_width, target_height))
+
+    resized_mask.save(save_path)
 
 
 # Main function to run the process
@@ -63,10 +68,10 @@ def run_inference(image_path, model_path, output_path):
     model = load_trained_model(model_path)
     image_tensor = preprocess_image(image_path)
     mask = segment_image(model, image_tensor)
-    save_mask(mask, output_path)
+    save_mask(mask, output_path, image_path)
 
 
-# Load model
+# Load Stable Diffusion model
 pipe = AutoPipelineForInpainting.from_pretrained(
     "diffusers/stable-diffusion-xl-1.0-inpainting-0.1"
 )
@@ -81,11 +86,12 @@ def generate_photo(input_image):
     prompt = "Professional LinkedIn photo, person in a suit, realistic skin texture, photorealistic, hyper realism, 85mm portrait photography, hard rim lighting photography, centered, plain or blurred background"
     negative_prompt = "deformed, disfigured, poor details, bad anatomy"
 
+    # Generate mask
+    run_inference(input_image, "model.pth", "../results/mask.png")
+    mask_image = Image.open("../results/mask.png").convert("RGB")
+
     # Process input image
     input_image = Image.open(input_image).convert("RGB")
-    mask_image = Image.open("../src/data/train_masks/33_mask.PNG").convert(
-        "RGB"
-    )  # temp mask loading
 
     # Generate output image
     images = pipe(
@@ -97,6 +103,8 @@ def generate_photo(input_image):
         num_inference_steps=20,
         guidance_scale=7.5,
     ).images
+
+    # Save image
     images[0].save(f"../results/{count}.png")
 
     return images[0]
