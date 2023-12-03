@@ -124,7 +124,7 @@ def main():
             val_loader, model, folder="saved_images/", device=DEVICE
         )
         
-        urrent_dice_score = check_accuracy(val_loader, model, device=DEVICE)
+        current_dice_score = check_accuracy(val_loader, model, device=DEVICE)
         
         if current_dice_score > best_dice_score:
             best_dice_score = current_dice_score
