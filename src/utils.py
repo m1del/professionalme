@@ -6,6 +6,10 @@ from torch.utils.data import DataLoader
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     torch.save(state, filename)
+    
+def save_model_state_dict(model, file_path):
+    torch.save(model.state_dict(), file_path)
+    print(f"Model state_dict saved to {file_path}")
 
 def load_checkpoint(checkpoint, model):
     print("=> Loading checkpoint")
@@ -71,10 +75,14 @@ def check_accuracy(loader, model, device="cuda"):
             )
 
     print(
-        f"Got {num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}"
+        f"{num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}"
     )
+        
     print(f"Dice score: {dice_score/len(loader)}")
     model.train()
+
+    dice_score = dice_score/len(loader)
+    return dice_score
 
 def save_predictions_as_imgs(
     loader, model, folder="saved_images/", device="cuda"

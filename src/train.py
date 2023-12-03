@@ -11,13 +11,14 @@ from utils import (
     get_loaders,
     check_accuracy,
     save_predictions_as_imgs,
+    save_model_state_dict
 )
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16 # testing
-NUM_EPOCHS = 25  # testing
+BATCH_SIZE = 20 # testing
+NUM_EPOCHS = 50  # testing
 NUM_WORKERS = 2
 IMAGE_HEIGHT = 480
 IMAGE_WIDTH = 640
@@ -77,7 +78,14 @@ def main():
         ],
     )
 
-    model = UNET(in_channels=3, out_channels=1).to(DEVICE)
+    model = UNET(in_channels=3, out_channels=1)
+    
+    if torch.cuda.device_count() > 1:
+        print(f"{torch.cuda.device_count()} GPUs available, using DataParallel")
+        model = nn.DataParallel(model)
+
+    model = model.to(DEVICE)
+    
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
@@ -99,7 +107,8 @@ def main():
 
     # check_accuracy(val_loader, model, device=DEVICE)
     scaler = torch.cuda.amp.GradScaler()
-
+    
+    best_dice_score = 0.0
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loader, model, optimizer, loss_fn, scaler)
 
@@ -108,15 +117,20 @@ def main():
             "state_dict": model.state_dict(),
             "optimizer":optimizer.state_dict(),
         }
-        save_checkpoint(checkpoint)
-
-        # check accuracy
-        check_accuracy(val_loader, model, device=DEVICE)
+        # save_checkpoint(checkpoint)
 
         # print some examples to a folder
         save_predictions_as_imgs(
             val_loader, model, folder="saved_images/", device=DEVICE
         )
-
+        
+        urrent_dice_score = check_accuracy(val_loader, model, device=DEVICE)
+        
+        if current_dice_score > best_dice_score:
+            best_dice_score = current_dice_score
+            save_model_state_dict(model, "model.pth")
+            print(f"Model state_dict saved to model.pth with dice score {best_dice_score}")
+            
+        
 if __name__ == "__main__":
     main()
