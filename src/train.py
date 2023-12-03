@@ -17,12 +17,12 @@ from utils import (
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16 # testing
-NUM_EPOCHS = 3  # testing
+NUM_EPOCHS = 25  # testing
 NUM_WORKERS = 2
 IMAGE_HEIGHT = 480
 IMAGE_WIDTH = 640
 PIN_MEMORY = True
-LOAD_MODEL = True
+LOAD_MODEL = False
 TRAIN_IMG_DIR = "data/train_images/"
 TRAIN_MASK_DIR = "data/train_masks/"
 VAL_IMG_DIR = "data/val_images/"
@@ -48,7 +48,6 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
 
         # update tqdm loop
         loop.set_postfix(loss=loss.item())
-
 
 def main():
     train_transform = A.Compose(
@@ -98,7 +97,7 @@ def main():
         load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
 
 
-    check_accuracy(val_loader, model, device=DEVICE)
+    # check_accuracy(val_loader, model, device=DEVICE)
     scaler = torch.cuda.amp.GradScaler()
 
     for epoch in range(NUM_EPOCHS):
@@ -118,7 +117,6 @@ def main():
         save_predictions_as_imgs(
             val_loader, model, folder="saved_images/", device=DEVICE
         )
-
 
 if __name__ == "__main__":
     main()
