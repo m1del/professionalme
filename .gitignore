@@ -1,0 +1,8 @@
+data/*
+.ipynb_checkpoints/
+conda/
+__pycache__/
+my_checkpoint.pth.tar
+src/data/
+!src/data/mask_dataset.zip
+*.pth
